@@ -1,5 +1,7 @@
 package poll.model;
 
+import java.util.LinkedList;
+
 public class Poll {
 	private String pId;
 	private String pollTitle;
@@ -8,6 +10,8 @@ public class Poll {
 	private String options;
 	private String comments;
 	private String finalChoice;
+	
+	private LinkedList<Vote> polls;
 	
 	//Getters & Setters
 	public String getpId() {
@@ -53,7 +57,15 @@ public class Poll {
 		this.finalChoice = finalChoice;
 	}
 	
+	public LinkedList<Vote> getPolls() {
+		return polls;
+	}
+	public void setPolls(LinkedList<Vote> polls) {
+		this.polls = polls;
+	}
+	
 	//Constructor
 	public Poll() {
+		polls = new LinkedList<>();
 	}
 }

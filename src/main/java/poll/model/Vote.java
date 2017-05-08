@@ -1,14 +1,10 @@
 package poll.model;
 
-import java.util.LinkedList;
-
 public class Vote {
 	private String voteId;
 	private String pId;
 	private String participantName;
 	private String chosenOption;
-	
-	private LinkedList<Poll> votes;
 
 	//Getters & Setters
 	public String getVoteId() {
@@ -35,15 +31,8 @@ public class Vote {
 	public void setChosenOption(String chosenOption) {
 		this.chosenOption = chosenOption;
 	}
-	public LinkedList<Poll> getVotes() {
-		return votes;
-	}
-	public void setVotes(LinkedList<Poll> votes) {
-		this.votes = votes;
-	}
 	
 	//Constructor
 	public Vote() {
-		votes = new LinkedList<>();
 	}
 }
