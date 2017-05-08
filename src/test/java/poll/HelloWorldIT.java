@@ -1,4 +1,4 @@
-package polling;
+package poll;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,4 +1,4 @@
-package polling;
+package poll;
 
 
 public class JsonBean {
