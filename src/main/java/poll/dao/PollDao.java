@@ -28,13 +28,13 @@ public class PollDao {
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30); //set timeout to 30 sec.
 
-	      statement.executeUpdate("drop table if exists poll");
+	      /*statement.executeUpdate("drop table if exists poll");
 	      statement.executeUpdate("create table poll (id string,"
 	    		  									+"title string,"
 	      											+"description string,"
 	      											+"pollOptionType string,"
 	      											+"comments string,"
-	      											+"finalChoice string)");
+	      											+"finalChoice string)");*/
 	      
 	      statement.executeUpdate("insert into poll values('"+pId+"',"
 	      												+ "'"+p.getPollTitle()+"',"
@@ -43,15 +43,14 @@ public class PollDao {
 	      												+ "'"+p.getComments()+"',"
 	      												+ "'"+p.getFinalChoice()+"')");
 	      
-	      statement.executeUpdate("create table poll_options (id string,options string)");
+	      //statement.executeUpdate("create table poll_options (id string,options string)");
 	      for(String opts : p.getOptions()){
 	    	  statement.executeUpdate("insert into poll_options values ('"+pId+"','"+opts+"')");
 	      }
 	    }
 	    catch(SQLException e)
 	    {
-	      //if the error message is "out of memory", 
-	      //it probably means no database file is found
+	      //if the error message is "out of memory",it probably means no database file is found
 	      System.err.println(e.getMessage());
 	    }
 	    finally
@@ -100,7 +99,7 @@ public class PollDao {
 			  listOfPolls.add(p);	      
 	      }    
 	    }	    
-	    catch(SQLException | ClassNotFoundException e)	    
+	    catch(SQLException e)	    
 	    {      
 	    	System.err.println(e.getMessage());
 	    }

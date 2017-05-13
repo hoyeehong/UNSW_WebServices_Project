@@ -17,8 +17,6 @@ public class PollingServicesTest {
 	
 	public static void main(String[] args) throws Exception  
 	{		
-		UUID uuid = UUID.randomUUID();
-		String vId = uuid.toString();
 	    Class.forName("org.sqlite.JDBC");
 	    
 	    String pId = "2cba1d48-bc70-4b89-acc9-43f5535b7fb9";
@@ -56,11 +54,17 @@ public class PollingServicesTest {
 	    	  statement.executeUpdate("insert into poll_options values ('"+pId+"','"+opts+"')");
 	      }*/
 	      
-	     
+	      ResultSet rs = statement.executeQuery("select finalChoice from poll where id='"+pId+"'");
+	      while(rs.next())	      
+	      {	
+	    	  if(rs.getString(1)==null){
+	    		  
+	    	  }
+	      }
 	      
 	    	  
 	      
-	    	  statement.executeUpdate("update poll set title ='"+title+"',"
+	    	  /*statement.executeUpdate("update poll set title ='"+title+"',"
 	    	  						 +"description ='"+description+"',"
 	    	  						 +"pollOptionType ='"+pollOptionType+"',"
 	    	  						 +"comments ='"+comments+"',"
@@ -69,7 +73,7 @@ public class PollingServicesTest {
 	    	  statement.executeUpdate("delete from poll_options where id ='"+pId+"'");
 	    	  for(String opts : options){
 		    	  statement.executeUpdate("insert into poll_options values('"+pId+"','"+opts+"')");      
-	    	  }
+	    	  }*/
 	     
 	      
 	    }

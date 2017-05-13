@@ -47,9 +47,7 @@ public class PollResource {
 			@FormParam("description") String description,
 			@FormParam("pollOptionType") String pollOptionType,
 			@FormParam("options") LinkedList<String> options,
-			@FormParam("comments") String comments
-	) 
-	throws Exception
+			@FormParam("comments") String comments) throws Exception
 	{
 		Poll p = new Poll(pollTitle);
 		
@@ -80,11 +78,7 @@ public class PollResource {
 		PollDao pDao = new PollDao();
 		String pId = pDao.createPoll(p);
 		
-		if(pId.equals("0")){
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-		}
-		
-		p.setpId(pId);
+		//p.setpId(pId);
 		return Response.created(new URI(uriInfo.getBaseUri() +"polls/"+ pId)).entity(pId).build();
 	}
 	
@@ -93,8 +87,8 @@ public class PollResource {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAllPolls() {
-		
+	public Response getAllPolls()
+	{
 		LinkedList<Poll> listOfPolls = new LinkedList<>();
 		
 		PollDao pDao = new PollDao();
@@ -114,7 +108,8 @@ public class PollResource {
 	@GET
 	@Path("{pid}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getPoll(@PathParam("pid") String id) throws ClassNotFoundException {
+	public Response getPoll(@PathParam("pid") String id) throws ClassNotFoundException
+	{
 		Poll p = null;
 		LinkedList<Poll> listOfPolls = new LinkedList<>();
 		PollDao pDao = new PollDao();
@@ -140,8 +135,8 @@ public class PollResource {
 	@GET
 	@Path("{pid}/votes")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getVotesByPid(@PathParam("pid") String id) throws ClassNotFoundException {
-	
+	public Response getVotesByPid(@PathParam("pid") String id) throws ClassNotFoundException
+	{
 		LinkedList<Vote> listOfVotes = new LinkedList<>();	
 		VoteDao votesdao = new VoteDao();	
 		listOfVotes = votesdao.getVotesByPid(id);
@@ -214,9 +209,8 @@ public class PollResource {
 			@FormParam("optiontype") String optionType,
 			@FormParam("option") LinkedList<String> options,
 			@FormParam("comments") String comments,
-			@FormParam("finalchoice") String finalChoice
-	) {	
-		//String id = null;
+			@FormParam("finalchoice") String finalChoice) 
+	{		
 		PollDao pollsdao = new PollDao();	
 		Poll p = new Poll();
 		
