@@ -1,142 +1,259 @@
 package poll;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.util.UUID;
+import java.net.URI;
+import java.util.LinkedList;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import poll.model.Vote;
 import poll.model.Poll;
+import poll.dao.PollDao;
+import poll.dao.VoteDao;
 
 @Path("/polls")
 public class PollResource {
-
+	@Context
+	UriInfo uriInfo;
+	
+	/**
+	 * Creating a poll
+	 * 
+	 * @param pollTitle
+	 * @param description
+	 * @param pollOptionType
+	 * @param options
+	 * @param comments
+	 * 
+	 * @return a link to the resource's location 
+	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.TEXT_PLAIN)
-	public String newPoll(
+	public Response newPoll(
 			@FormParam("pollTitle") String pollTitle,
 			@FormParam("description") String description,
 			@FormParam("pollOptionType") String pollOptionType,
-			@FormParam("options") String options,
-			@FormParam("comments") String comments,
-			@FormParam("finalChoice") String finalChoice
+			@FormParam("options") LinkedList<String> options,
+			@FormParam("comments") String comments
 	) 
 	throws Exception
 	{
-		File file = new File("polls.xml");
-		if(!file.exists())
-		{
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-			bufferedWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><polls></polls>");
-			bufferedWriter.close();
-		}
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document doc = builder.parse(file);
-		Node polls = doc.getDocumentElement();
+		Poll p = new Poll(pollTitle);
 		
-		//set poll ID node
-		UUID uuid = UUID.randomUUID();
-		String pId = uuid.toString();
-		Element pIdNode = doc.createElement("pId");
-		pIdNode.appendChild(doc.createTextNode(pId));
-		
-		Element pollTitleNode = doc.createElement("pollTitle");
-		if(pollTitle == null)
-		{
-			pollTitleNode.appendChild(doc.createTextNode(""));
+		if(description == null){
+			p.setDescription("");
 		}
-		else
-		{
-			pollTitleNode.appendChild(doc.createTextNode(pollTitle));
+		else{
+			p.setDescription(description);
+		}
+		if(pollOptionType == null){
+			p.setPollOptionType("");
+		}
+		else{
+			p.setPollOptionType(pollOptionType);
 		}
 		
-		Element descriptionNode = doc.createElement("description");
-		if(description == null)
-		{
-			descriptionNode.appendChild(doc.createTextNode(""));
+		p.setOptions(options);
+		
+		if(comments == null){
+			p.setComments("");
 		}
-		else
-		{
-			descriptionNode.appendChild(doc.createTextNode(description));
+		else{
+			p.setComments(comments);
 		}
 		
-		Element pollOptionTypeNode = doc.createElement("pollOptionType");
-		if(pollOptionType == null)
-		{
-			pollOptionTypeNode.appendChild(doc.createTextNode(""));
-		}
-		else
-		{
-			pollOptionTypeNode.appendChild(doc.createTextNode(pollOptionType));
+		p.setFinalChoice("");
+		
+		PollDao pDao = new PollDao();
+		String pId = pDao.createPoll(p);
+		
+		if(pId.equals("0")){
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
-		Element optionsNode = doc.createElement("options");
-		if(options == null)
-		{
-			optionsNode.appendChild(doc.createTextNode(""));
+		p.setpId(pId);
+		return Response.created(new URI(uriInfo.getBaseUri() +"polls/"+ pId)).entity(pId).build();
+	}
+	
+	/**
+	 * Getting polls(collection)
+	 */
+	@GET
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getAllPolls() {
+		
+		LinkedList<Poll> listOfPolls = new LinkedList<>();
+		
+		PollDao pDao = new PollDao();
+		listOfPolls = pDao.getPollCollection();
+		
+		if(listOfPolls != null && !listOfPolls.isEmpty()){
+			return Response.ok(listOfPolls).build();
 		}
-		else
-		{
-			optionsNode.appendChild(doc.createTextNode(options));
+		return Response.status(Response.Status.NOT_FOUND).build();
+	}
+	
+	/**
+	 * Getting a specific poll
+	 * @param poll id
+	 * @return the specified poll
+	 */
+	@GET
+	@Path("{pid}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getPoll(@PathParam("pid") String id) throws ClassNotFoundException {
+		Poll p = null;
+		LinkedList<Poll> listOfPolls = new LinkedList<>();
+		PollDao pDao = new PollDao();
+		listOfPolls = pDao.getPollCollection();
+		
+		for(Poll eachPoll : listOfPolls){
+			if(eachPoll.getpId() == id){
+				p = eachPoll;
+				break;
+			}
+		}
+		if(p == null){
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		return Response.ok(p).build(); 
+	}
+	
+	/**
+	 * Getting the vote(s) of a specific poll
+	 * @param poll id
+	 * @return list of votes belonging the poll
+	 */
+	@GET
+	@Path("{pid}/votes")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getVotesByPid(@PathParam("pid") String id) throws ClassNotFoundException {
+	
+		LinkedList<Vote> listOfVotes = new LinkedList<>();	
+		VoteDao votesdao = new VoteDao();	
+		listOfVotes = votesdao.getVotesByPid(id);
+				
+		if(listOfVotes == null || listOfVotes.isEmpty()){
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}		
+		return Response.ok(listOfVotes).build(); 
+	}
+	
+	/**
+	 * Getting a particular vote
+	 * @param pid
+	 * @param vid
+	 * @return a vote
+	 */
+	@GET
+	@Path("{pid}/votes/{vid}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getVoteByPid(@PathParam("pid") String pid, @PathParam("vid") String vid) throws ClassNotFoundException 
+	{	
+		VoteDao votesdao = new VoteDao();	
+		LinkedList<Vote> vs = null;
+		vs = votesdao.getVotesByPid(pid);
+
+		Vote v = null;	
+		for(Vote eachVote : vs){
+			if(eachVote.getVoteId() == vid){
+				v = eachVote;
+				break;
+			}
 		}
 		
-		Element commentsNode = doc.createElement("comments");
-		if(comments == null)
-		{
-			commentsNode.appendChild(doc.createTextNode(""));
+		if(v == null){
+			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-		else
-		{
-			commentsNode.appendChild(doc.createTextNode(comments));
+		return Response.ok(v).build(); 
+	}
+	
+	@GET
+	@Path("/search")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response searchPoll(@QueryParam("pid") String pid) 
+	{
+		Poll p = null;
+		LinkedList<Poll> ps = new LinkedList<>();
+		
+		PollDao pollsdao = new PollDao();	
+		ps = pollsdao.getPollCollection();
+		
+		for(Poll eachPoll : ps){
+			if(eachPoll.getpId() == pid){
+				p = eachPoll;
+				break;
+			}
+		}	
+		if(p == null){
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}	
+		return Response.ok(p).build();
+	}
+	
+	@PUT
+	@Path("{pid}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response updatePoll(			
+			@PathParam("pid") String pid,
+			@FormParam("title") String title,
+			@FormParam("description") String description,
+			@FormParam("optiontype") String optionType,
+			@FormParam("option") LinkedList<String> options,
+			@FormParam("comments") String comments,
+			@FormParam("finalchoice") String finalChoice
+	) {	
+		//String id = null;
+		PollDao pollsdao = new PollDao();	
+		Poll p = new Poll();
+		
+		p.setpId(pid);
+		p.setPollTitle(title);
+		p.setDescription(description);
+		p.setPollOptionType(optionType);
+		p.setOptions(options);
+		p.setComments(comments);
+		p.setFinalChoice(finalChoice);
+		
+		String idToUpdate = pollsdao.updatePoll(p); //Go implement this method!
+		
+		if(idToUpdate.equals("Poll ID not exist")){
+			return Response.status(Response.Status.NOT_FOUND).build();
 		}
+		else if(idToUpdate.equals("Votes exist")){
+			return Response.status(Response.Status.PRECONDITION_FAILED).build();
+		}	
+		return Response.ok(p).build();
+	}
+	
+	@DELETE
+	@Path("{pid}")
+	public Response deletePoll(@PathParam("pid") String id) 
+	{
+		PollDao pollsdao = new PollDao();	
+		String idToDelete = null;
+		idToDelete = pollsdao.deletePoll(id);
 		
-		Element finalChoiceNode = doc.createElement("finalChoice");
-		if(finalChoice == null)
-		{
-			finalChoiceNode.appendChild(doc.createTextNode(""));
+		if(idToDelete.equals("Poll ID not exist")){
+			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-		else
-		{
-			finalChoiceNode.appendChild(doc.createTextNode(finalChoice));
-		}
-		
-		Element votesNode = doc.createElement("votes");
-		
-		//set poll node
-		Element pollNode = doc.createElement("poll");
-		polls.appendChild(pollNode);
-		pollNode.appendChild(pIdNode);
-		pollNode.appendChild(pollTitleNode);
-		pollNode.appendChild(descriptionNode);
-		pollNode.appendChild(pollOptionTypeNode);
-		pollNode.appendChild(optionsNode);
-		pollNode.appendChild(commentsNode);
-		pollNode.appendChild(finalChoiceNode);
-		pollNode.appendChild(votesNode);
-		
-		//write content to XML file
-		Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		transformer.transform(new DOMSource(doc), new StreamResult(file));
-		
-		return "/polls/" + pId;
+		else if(idToDelete.equals("Votes exist")){
+			return Response.status(Response.Status.PRECONDITION_FAILED).build();
+		}	
+		return Response.status(Response.Status.NO_CONTENT).build();	
 	}
 	
 }

@@ -35,4 +35,11 @@ public class Vote {
 	//Constructor
 	public Vote() {
 	}
+	
+	public String toString(){
+		return voteId+" | "+
+			   pId+" | "+
+			   participantName+" | "+
+			   chosenOption;
+	}
 }

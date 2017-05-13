@@ -7,11 +7,11 @@ public class Poll {
 	private String pollTitle;
 	private String description;
 	private String pollOptionType;
-	private String options;
+	private LinkedList<String> options;
 	private String comments;
 	private String finalChoice;
 	
-	private LinkedList<Vote> polls;
+	private LinkedList<Vote> votesInPoll;
 	
 	//Getters & Setters
 	public String getpId() {
@@ -38,10 +38,10 @@ public class Poll {
 	public void setPollOptionType(String pollOptionType) {
 		this.pollOptionType = pollOptionType;
 	}
-	public String getOptions() {
+	public LinkedList<String> getOptions() {
 		return options;
 	}
-	public void setOptions(String options) {
+	public void setOptions(LinkedList<String> options) {
 		this.options = options;
 	}
 	public String getComments() {
@@ -57,15 +57,27 @@ public class Poll {
 		this.finalChoice = finalChoice;
 	}
 	
-	public LinkedList<Vote> getPolls() {
-		return polls;
+	public LinkedList<Vote> getVotesInPoll() {
+		return votesInPoll;
 	}
-	public void setPolls(LinkedList<Vote> polls) {
-		this.polls = polls;
+	public void setVotesInPoll(LinkedList<Vote> votesInPoll) {
+		this.votesInPoll = votesInPoll;
 	}
 	
 	//Constructor
-	public Poll() {
-		polls = new LinkedList<>();
+	public Poll() {	
+	}
+	public Poll(String pollTitle) {	
+		this.pollTitle = pollTitle;
+	}
+	
+	public String toString(){
+		return pId+" | "+
+			   pollTitle+" | "+
+			   description+" | "+
+			   pollOptionType+" | "+
+			   options+" | "+
+			   comments+" | "+
+			   finalChoice;
 	}
 }
