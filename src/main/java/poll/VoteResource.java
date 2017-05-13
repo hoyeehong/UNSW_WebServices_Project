@@ -63,7 +63,7 @@ public class VoteResource {
 	}
 	
 	@GET
-	@Path("/poll/{pid}")
+	@Path("/polls/{pid}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getVotesByPid(@PathParam("pid") String id)
 	{
