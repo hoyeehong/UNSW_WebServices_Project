@@ -21,6 +21,7 @@ import javax.ws.rs.core.UriInfo;
 import poll.model.Vote;
 import poll.dao.VoteDao;
 
+@Path("/votes")
 public class VoteResource {
 	@Context
 	UriInfo uriInfo;
