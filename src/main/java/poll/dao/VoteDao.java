@@ -24,11 +24,17 @@ public class VoteDao {
 			connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");		      
 			Statement statement = connection.createStatement();		      
 			statement.setQueryTimeout(30);
-		    
+		    /*
+			statement.executeUpdate("drop table if exists vote");
+			statement.executeUpdate("create table vote(voteId string,"	//Will delete this
+												     +"pId string,"
+												     +"participantName string,"
+												     +"chosenOption string)");
+			*/
 			statement.executeUpdate("insert into vote values('"+vId+"',"
 														   +"'"+v.getpId()+"',"
 														   +"'"+v.getParticipantName()+"',"
-														   +"'"+v.getChosenOption()+"')");    
+														   +"'"+v.getChosenOption()+"')");
 		}		    
 		catch(SQLException e)		    
 		{		      
@@ -74,8 +80,9 @@ public class VoteDao {
 	    return v;
 	}
 	
-	public LinkedList<Vote> getVotesByPid(String id)
+	public LinkedList<Vote> getVotesByPid(String id) throws ClassNotFoundException
 	{		
+		Class.forName("org.sqlite.JDBC");
 		LinkedList<Vote> vs = new LinkedList<>();
 		Connection connection = null;
 	    try
@@ -83,12 +90,12 @@ public class VoteDao {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
 	      
-	      ResultSet rs = statement.executeQuery("select * from vote where id='"+id+"'");
+	      ResultSet rs = statement.executeQuery("select * from vote where pId='"+id+"'");
 	      while(rs.next())	      
 	      {	
 	    	  Vote v = new Vote();
-	    	  v.setpId(rs.getString(1));
-	    	  v.setVoteId(rs.getString(2));
+	    	  v.setVoteId(rs.getString(1));
+	    	  v.setpId(rs.getString(2));
 	    	  v.setParticipantName(rs.getString(3));
 	    	  v.setChosenOption(rs.getString(4));
 	    	  

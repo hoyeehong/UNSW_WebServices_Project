@@ -1,17 +1,18 @@
 package poll.model;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class Poll {
 	private String pId;
 	private String pollTitle;
 	private String description;
 	private String pollOptionType;
-	private LinkedList<String> options;
+	private List<String> options;
 	private String comments;
 	private String finalChoice;
 	
-	private LinkedList<Vote> votesInPoll;
+	private List<Vote> votesInPoll;
 	
 	//Getters & Setters
 	public String getpId() {
@@ -38,10 +39,10 @@ public class Poll {
 	public void setPollOptionType(String pollOptionType) {
 		this.pollOptionType = pollOptionType;
 	}
-	public LinkedList<String> getOptions() {
+	public List<String> getOptions() {
 		return options;
 	}
-	public void setOptions(LinkedList<String> options) {
+	public void setOptions(List<String> options) {
 		this.options = options;
 	}
 	public String getComments() {
@@ -57,10 +58,10 @@ public class Poll {
 		this.finalChoice = finalChoice;
 	}
 	
-	public LinkedList<Vote> getVotesInPoll() {
+	public List<Vote> getVotesInPoll() {
 		return votesInPoll;
 	}
-	public void setVotesInPoll(LinkedList<Vote> votesInPoll) {
+	public void setVotesInPoll(List<Vote> votesInPoll) {
 		this.votesInPoll = votesInPoll;
 	}
 	

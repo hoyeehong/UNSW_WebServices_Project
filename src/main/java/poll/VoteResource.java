@@ -69,7 +69,12 @@ public class VoteResource {
 	{
 		LinkedList<Vote> vs = new LinkedList<>();
 		VoteDao vDao = new VoteDao();
-		vs = vDao.getVotesByPid(id);
+		try {
+			vs = vDao.getVotesByPid(id);
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 		if(vs == null || vs.isEmpty()){
 			return Response.status(Response.Status.NOT_FOUND).build();

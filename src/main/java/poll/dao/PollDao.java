@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import poll.model.Poll;
+import poll.model.Vote;
 import poll.dao.VoteDao;
 
 public class PollDao {
@@ -19,7 +20,6 @@ public class PollDao {
 		//generate a random poll id
 		UUID uuid = UUID.randomUUID();
 		String pId = uuid.toString();
-		System.out.println("Before creating poll...");
 	    Connection connection = null;
 	    try
 	    {
@@ -27,37 +27,33 @@ public class PollDao {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30); //set timeout to 30 sec.
-
-	      statement.executeUpdate("drop table if exists poll");
-	      statement.executeUpdate("create table poll (id string,"
+	      /*
+	      statement.executeUpdate("drop table if exists poll");		//Will delete this
+	      statement.executeUpdate("create table poll (id string,"	//Will delete this
 	    		  									+"title string,"
 	      											+"description string,"
 	      											+"pollOptionType string,"
 	      											+"comments string,"
 	      											+"finalChoice string)");
-	      
+	      */
 	      statement.executeUpdate("insert into poll values('"+pId+"',"
-	      												+ "'"+p.getPollTitle()+"',"
-	      												+ "'"+p.getDescription()+"',"
-	      												+ "'"+p.getPollOptionType()+"',"
-	      												+ "'"+p.getComments()+"',"
-	      												+ "'"+p.getFinalChoice()+"')");
-	      
-	      statement.executeUpdate("drop table if exists poll_options");
-	      statement.executeUpdate("create table poll_options (id string,options string))");
+	      												 +"'"+p.getPollTitle()+"',"
+	      												 +"'"+p.getDescription()+"',"
+	      												 +"'"+p.getPollOptionType()+"',"
+	      												 +"'"+p.getComments()+"',"
+	      												 +"'"+p.getFinalChoice()+"')");
+	      /*
+	      statement.executeUpdate("drop table if exists poll_options");//Will delete this
+	      statement.executeUpdate("create table poll_options (id string,options string)");//Will delete this
+	      */
 	      for(String opts : p.getOptions()){
-	      		statement.executeUpdate("insert into poll_options values ('"+pId+"','"+opts+"')");
+	      		statement.executeUpdate("insert into poll_options values('"+pId+"','"+opts+"')");
 	      }
-	      
-	      System.out.println("After creating poll...");
 	    }
 	    catch(SQLException e)
 	    {
-	      //if the error message is "out of memory",it probably means no database file is found
 	      System.err.println(e.getMessage());
-	      e.printStackTrace();
 	    }
-	    
 		return pId;
 	}
 	
@@ -72,7 +68,6 @@ public class PollDao {
 	      Statement statement = connection.createStatement();
 		
 	      String sql = "select * from poll";
-	      System.out.println("1 "+sql);
 	      ResultSet rs = statement.executeQuery(sql);    	      
 	      while(rs.next())	      
 	      {	    	    	  
@@ -83,33 +78,19 @@ public class PollDao {
 		      p.setDescription(rs.getString(3));
 		      p.setPollOptionType(rs.getString(4));
 		        
-		      //p.setOptions(findPollOptions(rs.getString(1))); //id
-		        
+		      p.setOptions(findPollOptions(rs.getString(1))); //pid
+		       
 		      p.setComments(rs.getString(5));
 		      p.setFinalChoice(rs.getString(6));
 		        
-		      VoteDao votesdao = new VoteDao(); 	      
-			  //p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1))); //id
-		      
+		      VoteDao votesdao = new VoteDao();
+			  p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1))); //pid
 			  listOfPolls.add(p);	      
-	      }    
-	      System.out.println("2 "+sql);
+	      }
 	    }	    
 	    catch(SQLException e)	    
 	    {      
 	    	System.err.println(e.getMessage());
-	    }
-	    finally
-	    {	      
-	    	try     
-	    	{	        
-	    		if(connection != null)	          
-	    			connection.close();	      
-	    	}	      
-	    	catch(SQLException e)	      
-	    	{
-	    		System.err.println(e);	      
-	    	}   
 	    }
 		return listOfPolls;
 	}
@@ -125,7 +106,6 @@ public class PollDao {
 	      Statement statement = connection.createStatement();
 	      
 	      String sql = "select * from poll_options where id='"+pId+"'";
-	      System.out.println(sql);
 	      ResultSet rs = statement.executeQuery(sql);
 	      while(rs.next()){
 	    	  listOfPollsOpts.add(rs.getString(2));

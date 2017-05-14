@@ -2,6 +2,7 @@ package poll;
 
 import java.net.URI;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -46,7 +47,7 @@ public class PollResource {
 			@FormParam("title") String title,
 			@FormParam("description") String description,
 			@FormParam("pollOptionType") String pollOptionType,
-			@FormParam("options") LinkedList<String> options,
+			@FormParam("options") List<String> options,
 			@FormParam("comments") String comments) throws Exception
 	{
 		Poll p = new Poll(title);
@@ -62,23 +63,19 @@ public class PollResource {
 		else{
 			p.setPollOptionType(pollOptionType);
 		}
-		System.out.println("Before setting options...");
 		p.setOptions(options);
-		System.out.println(options);
 		if(comments == null){
 			p.setComments("");
 		}
 		else{
 			p.setComments(comments);
 		}
+		//p.setVotesInPoll(null);
 		p.setFinalChoice("");
 		PollDao pDao = new PollDao();
 		String pId = pDao.createPoll(p);
-		if(pId.equals("0")){
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-		}
-		//p.setpId(pId);
-		return Response.created(new URI(uriInfo.getBaseUri() +"polls/"+ pId)).entity(pId).build();
+		
+		return Response.created(new URI(uriInfo.getBaseUri()+"polls/"+pId)).entity(pId).build();
 	}
 	
 	/**
@@ -90,17 +87,16 @@ public class PollResource {
 	{
 		LinkedList<Poll> listOfPolls = new LinkedList<>();
 		PollDao pDao = new PollDao();
-		try {
+		try 
+		{
 			listOfPolls = pDao.getPollCollection();
 		} 
 		catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		
-		if(listOfPolls != null && !listOfPolls.isEmpty()){
+		if(listOfPolls != null){
 			return Response.ok(listOfPolls).build();
 		}
-		System.out.println("GET Test");
 		return Response.status(Response.Status.NOT_FOUND).build();
 	}
 	
@@ -118,9 +114,10 @@ public class PollResource {
 		LinkedList<Poll> listOfPolls = new LinkedList<>();
 		PollDao pDao = new PollDao();
 		listOfPolls = pDao.getPollCollection();
-		
-		for(Poll eachPoll : listOfPolls){
-			if(eachPoll.getpId() == id){
+		for(Poll eachPoll : listOfPolls)
+		{
+			if(eachPoll.getpId().equals(id))
+			{
 				p = eachPoll;
 				break;
 			}
@@ -163,12 +160,12 @@ public class PollResource {
 	public Response getVoteByPid(@PathParam("pid") String pid, @PathParam("vid") String vid) throws ClassNotFoundException 
 	{	
 		VoteDao votesdao = new VoteDao();	
-		LinkedList<Vote> vs = null;
+		LinkedList<Vote> vs = new LinkedList<>();
 		vs = votesdao.getVotesByPid(pid);
 
 		Vote v = null;	
 		for(Vote eachVote : vs){
-			if(eachVote.getVoteId() == vid){
+			if(eachVote.getVoteId().equals(vid)){
 				v = eachVote;
 				break;
 			}
@@ -186,25 +183,23 @@ public class PollResource {
 	public Response searchPoll(@QueryParam("pid") String pid) 
 	{
 		Poll p = null;
-		LinkedList<Poll> ps = new LinkedList<>();
-		
-		PollDao pollsdao = new PollDao();	
-		try {
-			ps = pollsdao.getPollCollection();
-		} catch (ClassNotFoundException e) {
-			// TODO Autos-generated catch block
+		try
+		{		
+			LinkedList<Poll> ps = new LinkedList<>();
+			PollDao pDao = new PollDao();
+			ps = pDao.getPollCollection();	
+			for(Poll eachPoll : ps)
+			{
+				if(eachPoll.getpId().equals(pid))
+				{
+					p = eachPoll;
+					break;
+				}
+			}	
+		} 
+		catch (ClassNotFoundException e) {
 			e.printStackTrace();
-		}
-		
-		for(Poll eachPoll : ps){
-			if(eachPoll.getpId() == pid){
-				p = eachPoll;
-				break;
-			}
-		}	
-		if(p == null){
-			return Response.status(Response.Status.NOT_FOUND).build();
-		}	
+		}		
 		return Response.ok(p).build();
 	}
 	
