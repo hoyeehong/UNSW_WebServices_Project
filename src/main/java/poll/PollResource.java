@@ -31,7 +31,7 @@ public class PollResource {
 	/**
 	 * Creating a poll
 	 * 
-	 * @param pollTitle
+	 * @param title
 	 * @param description
 	 * @param pollOptionType
 	 * @param options
@@ -43,14 +43,13 @@ public class PollResource {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response newPoll(
-			@FormParam("pollTitle") String pollTitle,
+			@FormParam("title") String title,
 			@FormParam("description") String description,
 			@FormParam("pollOptionType") String pollOptionType,
 			@FormParam("options") LinkedList<String> options,
 			@FormParam("comments") String comments) throws Exception
 	{
-		Poll p = new Poll(pollTitle);
-		
+		Poll p = new Poll(title);
 		if(description == null){
 			p.setDescription("");
 		}
@@ -63,21 +62,21 @@ public class PollResource {
 		else{
 			p.setPollOptionType(pollOptionType);
 		}
-		
+		System.out.println("Before setting options...");
 		p.setOptions(options);
-		
+		System.out.println(options);
 		if(comments == null){
 			p.setComments("");
 		}
 		else{
 			p.setComments(comments);
 		}
-		
 		p.setFinalChoice("");
-		
 		PollDao pDao = new PollDao();
 		String pId = pDao.createPoll(p);
-		
+		if(pId.equals("0")){
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+		}
 		//p.setpId(pId);
 		return Response.created(new URI(uriInfo.getBaseUri() +"polls/"+ pId)).entity(pId).build();
 	}
@@ -86,17 +85,22 @@ public class PollResource {
 	 * Getting polls(collection)
 	 */
 	@GET
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllPolls()
 	{
 		LinkedList<Poll> listOfPolls = new LinkedList<>();
-		
 		PollDao pDao = new PollDao();
-		listOfPolls = pDao.getPollCollection();
+		try {
+			listOfPolls = pDao.getPollCollection();
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 		if(listOfPolls != null && !listOfPolls.isEmpty()){
 			return Response.ok(listOfPolls).build();
 		}
+		System.out.println("GET Test");
 		return Response.status(Response.Status.NOT_FOUND).build();
 	}
 	
@@ -107,7 +111,7 @@ public class PollResource {
 	 */
 	@GET
 	@Path("{pid}")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getPoll(@PathParam("pid") String id) throws ClassNotFoundException
 	{
 		Poll p = null;
@@ -134,7 +138,7 @@ public class PollResource {
 	 */
 	@GET
 	@Path("{pid}/votes")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getVotesByPid(@PathParam("pid") String id) throws ClassNotFoundException
 	{
 		LinkedList<Vote> listOfVotes = new LinkedList<>();	
@@ -155,7 +159,7 @@ public class PollResource {
 	 */
 	@GET
 	@Path("{pid}/votes/{vid}")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getVoteByPid(@PathParam("pid") String pid, @PathParam("vid") String vid) throws ClassNotFoundException 
 	{	
 		VoteDao votesdao = new VoteDao();	
@@ -178,14 +182,19 @@ public class PollResource {
 	
 	@GET
 	@Path("/search")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response searchPoll(@QueryParam("pid") String pid) 
 	{
 		Poll p = null;
 		LinkedList<Poll> ps = new LinkedList<>();
 		
 		PollDao pollsdao = new PollDao();	
-		ps = pollsdao.getPollCollection();
+		try {
+			ps = pollsdao.getPollCollection();
+		} catch (ClassNotFoundException e) {
+			// TODO Autos-generated catch block
+			e.printStackTrace();
+		}
 		
 		for(Poll eachPoll : ps){
 			if(eachPoll.getpId() == pid){
@@ -222,14 +231,20 @@ public class PollResource {
 		p.setComments(comments);
 		p.setFinalChoice(finalChoice);
 		
-		String idToUpdate = pollsdao.updatePoll(p); //Go implement this method!
-		
-		if(idToUpdate.equals("Poll ID not exist")){
-			return Response.status(Response.Status.NOT_FOUND).build();
+		String idToUpdate;
+		try 
+		{
+			idToUpdate = pollsdao.updatePoll(p);
+			if(idToUpdate.equals("Poll ID not exist")){
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			else if(idToUpdate.equals("Votes exist")){
+				return Response.status(Response.Status.PRECONDITION_FAILED).build();
+			}
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		else if(idToUpdate.equals("Votes exist")){
-			return Response.status(Response.Status.PRECONDITION_FAILED).build();
-		}	
 		return Response.ok(p).build();
 	}
 	
@@ -239,15 +254,20 @@ public class PollResource {
 	{
 		PollDao pollsdao = new PollDao();	
 		String idToDelete = null;
-		idToDelete = pollsdao.deletePoll(id);
-		
-		if(idToDelete.equals("Poll ID not exist")){
-			return Response.status(Response.Status.NOT_FOUND).build();
+		try 
+		{
+			idToDelete = pollsdao.deletePoll(id);
+			if(idToDelete.equals("Poll ID not exist")){
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}
+			else if(idToDelete.equals("Votes exist")){
+				return Response.status(Response.Status.PRECONDITION_FAILED).build();
+			}
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		else if(idToDelete.equals("Votes exist")){
-			return Response.status(Response.Status.PRECONDITION_FAILED).build();
-		}	
-		return Response.status(Response.Status.NO_CONTENT).build();	
+		return Response.status(Response.Status.OK).build();	
 	}
 	
 }

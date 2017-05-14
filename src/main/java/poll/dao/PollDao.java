@@ -14,12 +14,12 @@ import poll.dao.VoteDao;
 public class PollDao {
 
 	public String createPoll(Poll p) throws ClassNotFoundException
-	{
+	{	
 		Class.forName("org.sqlite.JDBC");
 		//generate a random poll id
 		UUID uuid = UUID.randomUUID();
 		String pId = uuid.toString();
-
+		System.out.println("Before creating poll...");
 	    Connection connection = null;
 	    try
 	    {
@@ -28,13 +28,13 @@ public class PollDao {
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30); //set timeout to 30 sec.
 
-	      /*statement.executeUpdate("drop table if exists poll");
+	      statement.executeUpdate("drop table if exists poll");
 	      statement.executeUpdate("create table poll (id string,"
 	    		  									+"title string,"
 	      											+"description string,"
 	      											+"pollOptionType string,"
 	      											+"comments string,"
-	      											+"finalChoice string)");*/
+	      											+"finalChoice string)");
 	      
 	      statement.executeUpdate("insert into poll values('"+pId+"',"
 	      												+ "'"+p.getPollTitle()+"',"
@@ -43,34 +43,27 @@ public class PollDao {
 	      												+ "'"+p.getComments()+"',"
 	      												+ "'"+p.getFinalChoice()+"')");
 	      
-	      //statement.executeUpdate("create table poll_options (id string,options string)");
+	      statement.executeUpdate("drop table if exists poll_options");
+	      statement.executeUpdate("create table poll_options (id string,options string))");
 	      for(String opts : p.getOptions()){
-	    	  statement.executeUpdate("insert into poll_options values ('"+pId+"','"+opts+"')");
+	      		statement.executeUpdate("insert into poll_options values ('"+pId+"','"+opts+"')");
 	      }
+	      
+	      System.out.println("After creating poll...");
 	    }
 	    catch(SQLException e)
 	    {
 	      //if the error message is "out of memory",it probably means no database file is found
 	      System.err.println(e.getMessage());
+	      e.printStackTrace();
 	    }
-	    finally
-	    {
-	      try
-	      {
-	        if(connection != null)
-	          connection.close();
-	      }
-	      catch(SQLException e)
-	      {
-	        //connection close failed.
-	        System.err.println(e);
-	      }
-	    }
+	    
 		return pId;
 	}
 	
-	public LinkedList<Poll> getPollCollection()
+	public LinkedList<Poll> getPollCollection() throws ClassNotFoundException
 	{
+		Class.forName("org.sqlite.JDBC");
 		LinkedList<Poll> listOfPolls = new LinkedList<>();	
 		Connection connection = null;
 	    try
@@ -78,7 +71,9 @@ public class PollDao {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
 		
-	      ResultSet rs = statement.executeQuery("select * from poll");    	      
+	      String sql = "select * from poll";
+	      System.out.println("1 "+sql);
+	      ResultSet rs = statement.executeQuery(sql);    	      
 	      while(rs.next())	      
 	      {	    	    	  
 	    	  Poll p = new Poll();
@@ -88,16 +83,17 @@ public class PollDao {
 		      p.setDescription(rs.getString(3));
 		      p.setPollOptionType(rs.getString(4));
 		        
-		      p.setOptions(findPollOptions(rs.getString(1))); //id
+		      //p.setOptions(findPollOptions(rs.getString(1))); //id
 		        
 		      p.setComments(rs.getString(5));
 		      p.setFinalChoice(rs.getString(6));
 		        
 		      VoteDao votesdao = new VoteDao(); 	      
-			  p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1))); //id
+			  //p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1))); //id
 		      
 			  listOfPolls.add(p);	      
 	      }    
+	      System.out.println("2 "+sql);
 	    }	    
 	    catch(SQLException e)	    
 	    {      
@@ -118,8 +114,9 @@ public class PollDao {
 		return listOfPolls;
 	}
 	
-	public LinkedList<String> findPollOptions(String pId)
+	public LinkedList<String> findPollOptions(String pId) throws ClassNotFoundException
 	{	
+		Class.forName("org.sqlite.JDBC");
 		LinkedList<String> listOfPollsOpts = new LinkedList<>();
 		Connection connection = null;
 	    try
@@ -127,7 +124,9 @@ public class PollDao {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
 	      
-	      ResultSet rs = statement.executeQuery("select * from poll_options where id='"+pId+"'");
+	      String sql = "select * from poll_options where id='"+pId+"'";
+	      System.out.println(sql);
+	      ResultSet rs = statement.executeQuery(sql);
 	      while(rs.next()){
 	    	  listOfPollsOpts.add(rs.getString(2));
 	      }
@@ -138,8 +137,9 @@ public class PollDao {
 		return listOfPollsOpts;
 	}
 	
-	public String updatePoll(Poll p)
+	public String updatePoll(Poll p) throws ClassNotFoundException
 	{
+		Class.forName("org.sqlite.JDBC");
 		Connection connection = null;
 		try
 	    {
@@ -185,8 +185,9 @@ public class PollDao {
 	    }
 		return "";	
 	}
-	public boolean votesExistInPoll(String pId)
+	public boolean votesExistInPoll(String pId) throws ClassNotFoundException
 	{	
+		Class.forName("org.sqlite.JDBC");
 		boolean exist = false;	
 		Connection connection = null;
 	    try   
@@ -209,25 +210,26 @@ public class PollDao {
 	    return exist;
 	}
 	
-	public String deletePoll(String pId)
+	public String deletePoll(String pId) throws ClassNotFoundException
 	{
+		Class.forName("org.sqlite.JDBC");
 		Connection connection = null;
 		try
 	    {
 			connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 		    Statement statement = connection.createStatement();    
-		    if(!votesExistInPoll(pId))
-			{
+		    //if(!votesExistInPoll(pId))
+			//{
 		    	ResultSet rs = statement.executeQuery("select id from poll where id = '"+pId+"'");		      
 				if(!rs.next()){	    	 
 					return "Poll ID not exist";		      
 				}	
-				statement.executeUpdate("delete from poll_options where id ='"+pId+"'");	
-			}
-		    else
-			{				
-		    	return "Votes exist";			
-			}      
+				statement.executeUpdate("delete from poll where id ='"+pId+"'");	
+			//}
+		    //else
+			//{				
+		    //	return "Votes exist";			
+			//}      
 	    }
 		catch(SQLException e)
 	    {		      

@@ -25,7 +25,7 @@ public class VoteDao {
 			Statement statement = connection.createStatement();		      
 			statement.setQueryTimeout(30);
 		    
-			statement.executeUpdate("insert into poll values('"+vId+"',"
+			statement.executeUpdate("insert into vote values('"+vId+"',"
 														   +"'"+v.getpId()+"',"
 														   +"'"+v.getParticipantName()+"',"
 														   +"'"+v.getChosenOption()+"')");    

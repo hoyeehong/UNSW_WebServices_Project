@@ -49,7 +49,7 @@ public class VoteResource {
 	
 	@GET
 	@Path("{vid}")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getVote(@PathParam("vid") String id)
 	{	
 		Vote v = null;
@@ -64,7 +64,7 @@ public class VoteResource {
 	
 	@GET
 	@Path("/polls/{pid}")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getVotesByPid(@PathParam("pid") String id)
 	{
 		LinkedList<Vote> vs = new LinkedList<>();
