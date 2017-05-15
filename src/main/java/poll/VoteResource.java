@@ -26,6 +26,13 @@ public class VoteResource {
 	@Context
 	UriInfo uriInfo;
 	
+	/**
+	 * Creates a vote
+	 * @param pid
+	 * @param participantName
+	 * @param chosenOption
+	 * @return location of the vote
+	 */
 	@POST
 	@Path("{pid}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -47,6 +54,11 @@ public class VoteResource {
 		return Response.created(new URI(uriInfo.getBaseUri()+"votes/"+ vId)).entity(vId).build();
 	}
 	
+	/**
+	 * Get a vote
+	 * @param id
+	 * @return vote
+	 */
 	@GET
 	@Path("{vid}")
 	@Produces({MediaType.APPLICATION_JSON})
@@ -54,7 +66,11 @@ public class VoteResource {
 	{	
 		Vote v = null;
 		VoteDao vDao = new VoteDao();
-		v = vDao.getVote(id);
+		try {
+			v = vDao.getVote(id);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		if(v == null)
 		{
 			return Response.status(Response.Status.NOT_FOUND).build();
@@ -62,6 +78,11 @@ public class VoteResource {
 		return Response.ok(v).build();
 	}
 	
+	/**
+	 * Get a poll's vote(s)
+	 * @param id
+	 * @return vote(s) that belong to the poll
+	 */
 	@GET
 	@Path("/polls/{pid}")
 	@Produces({MediaType.APPLICATION_JSON})
@@ -82,7 +103,14 @@ public class VoteResource {
 		return Response.ok(vs).build();
 	}
 	
-	
+	/**
+	 * Update a vote
+	 * @param vId
+	 * @param pId
+	 * @param participantName
+	 * @param chosenOption
+	 * @return updated vote
+	 */
 	@PUT
 	@Path("{vid}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -100,13 +128,20 @@ public class VoteResource {
 		v.setParticipantName(participantName);
 		v.setChosenOption(chosenOption);
 		
-		String id = votesdao.updateVote(v);
-		
-		if(id.equals("Vote ID not exist")){
-			return Response.status(Response.Status.NOT_FOUND).build();
-		}else if(id.equals("Already has a final choice")){
-			return Response.status(Response.Status.PRECONDITION_FAILED).build();
+		String id;
+		try {
+			id = votesdao.updateVote(v);
+			
+			if(id.equals("Vote ID not exist")){
+				return Response.status(Response.Status.NOT_FOUND).build();
+			}else if(id.equals("Already has a final choice")){
+				return Response.status(Response.Status.PRECONDITION_FAILED).build();
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
+		
+		
 		return Response.ok(v).build();
 	}
 	

@@ -55,8 +55,9 @@ public class VoteDao {
 		return vId;
 	}
 	
-	public Vote getVote(String id)
+	public Vote getVote(String id) throws ClassNotFoundException
 	{	
+		Class.forName("org.sqlite.JDBC");
 		Vote v = null;
 		Connection connection = null;
 	    try
@@ -64,7 +65,7 @@ public class VoteDao {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
 	      
-	      ResultSet rs = statement.executeQuery("select * from vote where id='"+id+"'");
+	      ResultSet rs = statement.executeQuery("select * from vote where voteId='"+id+"'");
 	      while(rs.next())
 	      {
 	    	  v = new Vote();
@@ -109,8 +110,9 @@ public class VoteDao {
 	    return vs;
 	}
 	
-	public String updateVote(Vote v)
+	public String updateVote(Vote v) throws ClassNotFoundException
 	{
+		Class.forName("org.sqlite.JDBC");
 		Connection connection = null;
 		try
 	    {
@@ -118,15 +120,15 @@ public class VoteDao {
 		    Statement statement = connection.createStatement();
 			if(!finalChoiceInPoll(v.getpId()))
 			{
-				ResultSet rs = statement.executeQuery("select id from vote where id = '"+v.getVoteId()+"'");		      
+				ResultSet rs = statement.executeQuery("select voteId from vote where voteId = '"+v.getVoteId()+"'");		      
 				if(!rs.next()){	    	 
 					return "Vote ID not exist";		      
 				}
 				if(v.getParticipantName() != null){
-					statement.executeUpdate("update vote set participantName ='"+v.getParticipantName()+"' where id ='"+v.getVoteId()+"'");
+					statement.executeUpdate("update vote set participantName ='"+v.getParticipantName()+"' where voteId ='"+v.getVoteId()+"'");
 				}
 				if(v.getChosenOption() != null){
-					statement.executeUpdate("update poll set chosenOption ='"+v.getChosenOption()+"' where id ='"+v.getVoteId()+"'");
+					statement.executeUpdate("update vote set chosenOption ='"+v.getChosenOption()+"' where voteId ='"+v.getVoteId()+"'");
 				}
 			}
 			else
@@ -138,6 +140,18 @@ public class VoteDao {
 	    {		      
 	    	System.err.println(e.getMessage());		    
 	    }
+		finally		    
+		{		      
+			try		      
+			{		        
+				if(connection != null)		          
+					connection.close();		      
+			}		      
+			catch(SQLException e)		      
+			{		        
+				System.err.println(e);		      
+			}		    
+		}
 		
 		return "";
 	}
@@ -154,7 +168,7 @@ public class VoteDao {
 	      ResultSet rs = statement.executeQuery("select finalChoice from poll where id='"+pid+"'");
 	      while(rs.next())	      
 	      {	
-	    	  if(rs.getString(1)!=null)
+	    	  if(rs.getString(1)==null)
 	    	  {
 	    		  finalChoiceStatus = true;
 	    	  }
@@ -162,6 +176,18 @@ public class VoteDao {
 	    }catch(SQLException e){      
 	    	System.err.println(e.getMessage());
 	    }
+	    finally		    
+		{		      
+			try		      
+			{		        
+				if(connection != null)		          
+					connection.close();		      
+			}		      
+			catch(SQLException e)		      
+			{		        
+				System.err.println(e);		      
+			}		    
+		}
 		return finalChoiceStatus;
 		
 	}
