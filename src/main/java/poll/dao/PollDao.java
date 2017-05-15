@@ -163,12 +163,22 @@ public class PollDao {
 	    {		      
 	    	System.err.println(e.getMessage());		    
 	    }
+		finally 
+		{			  
+			if (connection != null){		    
+				try{		      
+					connection.close();
+			    } 
+				catch (SQLException e){
+					System.err.println(e.getMessage());
+			    }		  
+			}		
+		}
 		return "";	
 	}
-	public boolean votesExistInPoll(String pId) throws ClassNotFoundException
-	{	
-		Class.forName("org.sqlite.JDBC");
-		boolean exist = false;	
+	public boolean votesExistInPoll(String pId) 
+	{
+		boolean notExist = false;	
 		Connection connection = null;
 	    try   
 	    {
@@ -177,17 +187,29 @@ public class PollDao {
 	      if(pId != null && !pId.isEmpty())
 	      {
 	    	  ResultSet rs = statement.executeQuery("select count(*) from poll p left join vote v on p.id = v.pId where p.id='"+pId+"'");
-		      int count = rs.getInt(1);
-		      if(count != 0){
-		    	  exist = true;
-		      }    	  
-	      } 
+	    	  int count = rs.getInt(1);
+		      if(count == 0)
+		      {
+		    	  notExist = true;
+		      }
+	      }
 	    }	
 	    catch(SQLException e)    	
 	    {		      	    		
 	    	System.err.println(e.getMessage());	    
-	    }		
-	    return exist;
+	    }
+	    finally 
+		{			  
+			if(connection != null){		    
+				try{		      
+					connection.close();
+			    } 
+				catch(SQLException e){
+					System.err.println(e.getMessage());
+			    }		  
+			}		
+		}
+	    return notExist;
 	}
 	
 	public String deletePoll(String pId) throws ClassNotFoundException
@@ -198,23 +220,34 @@ public class PollDao {
 	    {
 			connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 		    Statement statement = connection.createStatement();    
-		    //if(!votesExistInPoll(pId))
-			//{
+		    if(!votesExistInPoll(pId))
+			{
 		    	ResultSet rs = statement.executeQuery("select id from poll where id = '"+pId+"'");		      
 				if(!rs.next()){	    	 
 					return "Poll ID not exist";		      
 				}	
 				statement.executeUpdate("delete from poll where id ='"+pId+"'");	
-			//}
-		    //else
-			//{				
-		    //	return "Votes exist";			
-			//}      
+			}
+		    else
+			{				
+		    	return "Votes exist";			
+			}      
 	    }
 		catch(SQLException e)
 	    {		      
 	    	System.err.println(e.getMessage());		    
 	    }
+		finally 
+		{			  
+			if(connection != null){		    
+				try{		      
+					connection.close();
+			    } 
+				catch(SQLException e){
+					System.err.println(e.getMessage());
+			    }		  
+			}		
+		}
 		return "";
 	}
 	

@@ -211,7 +211,7 @@ public class PollResource {
 			@FormParam("title") String title,
 			@FormParam("description") String description,
 			@FormParam("optiontype") String optionType,
-			@FormParam("option") LinkedList<String> options,
+			@FormParam("option") List<String> options,
 			@FormParam("comments") String comments,
 			@FormParam("finalchoice") String finalChoice) 
 	{		
