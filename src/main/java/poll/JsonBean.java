@@ -1,5 +1,8 @@
 package poll;
 
+/**
+ * @author Yeehong Ho
+ */
 
 public class JsonBean {
     private String val1;
@@ -20,5 +23,4 @@ public class JsonBean {
     public void setVal2(String val2) {
         this.val2 = val2;
     }
-
 }

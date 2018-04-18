@@ -1,7 +1,10 @@
 package poll.model;
-
-import java.util.LinkedList;
 import java.util.List;
+
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
 
 public class Poll {
 	private String pId;

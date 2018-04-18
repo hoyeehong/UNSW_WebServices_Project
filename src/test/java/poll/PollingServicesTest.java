@@ -12,6 +12,11 @@ import poll.model.Vote;
 import poll.model.Poll;
 import poll.dao.PollDao;
 
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
+
 public class PollingServicesTest {
 	
 	public static void main(String[] args) throws Exception  
@@ -22,7 +27,6 @@ public class PollingServicesTest {
 	    {
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();	      
-
 	    }
 	    catch(SQLException e)
 	    {

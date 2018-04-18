@@ -9,8 +9,12 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import poll.model.Poll;
-import poll.model.Vote;
 import poll.dao.VoteDao;
+
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
 
 public class PollDao {
 
@@ -26,26 +30,13 @@ public class PollDao {
 	      //create a database connection
 	      connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");
 	      Statement statement = connection.createStatement();
-	      statement.setQueryTimeout(30); //set timeout to 30 sec.
-	      /*
-	      statement.executeUpdate("drop table if exists poll");		//Will delete this
-	      statement.executeUpdate("create table poll (id string,"	//Will delete this
-	    		  									+"title string,"
-	      											+"description string,"
-	      											+"pollOptionType string,"
-	      											+"comments string,"
-	      											+"finalChoice string)");
-	      */
+	      statement.setQueryTimeout(30);
 	      statement.executeUpdate("insert into poll values('"+pId+"',"
 	      												 +"'"+p.getPollTitle()+"',"
 	      												 +"'"+p.getDescription()+"',"
 	      												 +"'"+p.getPollOptionType()+"',"
 	      												 +"'"+p.getComments()+"',"
 	      												 +"'"+p.getFinalChoice()+"')");
-	      /*
-	      statement.executeUpdate("drop table if exists poll_options");//Will delete this
-	      statement.executeUpdate("create table poll_options (id string,options string)");//Will delete this
-	      */
 	      for(String opts : p.getOptions()){
 	      		statement.executeUpdate("insert into poll_options values('"+pId+"','"+opts+"')");
 	      }
@@ -77,14 +68,12 @@ public class PollDao {
 		      p.setPollTitle(rs.getString(2));
 		      p.setDescription(rs.getString(3));
 		      p.setPollOptionType(rs.getString(4));
-		        
-		      p.setOptions(findPollOptions(rs.getString(1))); //pid
-		       
+		      p.setOptions(findPollOptions(rs.getString(1)));
 		      p.setComments(rs.getString(5));
 		      p.setFinalChoice(rs.getString(6));
 		        
 		      VoteDao votesdao = new VoteDao();
-			  p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1))); //pid
+			  p.setVotesInPoll(votesdao.getVotesByPid(rs.getString(1)));
 			  listOfPolls.add(p);	      
 	      }
 	    }	    

@@ -1,5 +1,4 @@
 package poll;
-
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +22,11 @@ import poll.model.Vote;
 import poll.model.Poll;
 import poll.dao.PollDao;
 import poll.dao.VoteDao;
+
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
 
 @Path("/polls")
 public class PollResource {

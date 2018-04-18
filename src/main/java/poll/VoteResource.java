@@ -21,6 +21,11 @@ import javax.ws.rs.core.UriInfo;
 import poll.model.Vote;
 import poll.dao.VoteDao;
 
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
+
 @Path("/votes")
 public class VoteResource {
 	@Context

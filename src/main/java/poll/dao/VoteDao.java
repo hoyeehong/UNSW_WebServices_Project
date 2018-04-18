@@ -10,6 +10,11 @@ import java.util.UUID;
 
 import poll.model.Vote;
 
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
+
 public class VoteDao {
 
 	public String createVote(Vote v) throws ClassNotFoundException
@@ -24,13 +29,6 @@ public class VoteDao {
 			connection = DriverManager.getConnection("jdbc:sqlite:pollingservices.db");		      
 			Statement statement = connection.createStatement();		      
 			statement.setQueryTimeout(30);
-		    /*
-			statement.executeUpdate("drop table if exists vote");
-			statement.executeUpdate("create table vote(voteId string,"	//Will delete this
-												     +"pId string,"
-												     +"participantName string,"
-												     +"chosenOption string)");
-			*/
 			statement.executeUpdate("insert into vote values('"+vId+"',"
 														   +"'"+v.getpId()+"',"
 														   +"'"+v.getParticipantName()+"',"
@@ -188,7 +186,6 @@ public class VoteDao {
 				System.err.println(e);		      
 			}		    
 		}
-		return finalChoiceStatus;
-		
+		return finalChoiceStatus;	
 	}
 }

@@ -1,5 +1,10 @@
 package poll.model;
 
+/**
+ * @author Yeehong Ho
+ * @date 30/5/2017
+ */
+
 public class Vote {
 	private String voteId;
 	private String pId;
